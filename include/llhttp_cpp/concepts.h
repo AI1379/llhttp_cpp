@@ -9,6 +9,7 @@
 #include <type_traits>
 
 #include "concepts.h"
+#include "llhttp.h"
 
 namespace llhttp {
     template<typename T>
@@ -26,6 +27,7 @@ namespace llhttp {
             using Pointer = Ret(*)(Args...);
             using ReturnType = Ret;
             using FunctionType = Ret(Args...);
+            constexpr auto ArgCount = sizeof...(Args);
         };
 
         template<typename F, typename Ret, typename... Args>
@@ -33,6 +35,7 @@ namespace llhttp {
             using Pointer = Ret(*)(Args...);
             using ReturnType = Ret;
             using FunctionType = Ret(Args...);
+            constexpr auto ArgCount = sizeof...(Args);
         };
 
         template<typename F, typename Ret, typename... Args>
@@ -40,6 +43,15 @@ namespace llhttp {
             using Pointer = Ret(*)(Args...);
             using ReturnType = Ret;
             using FunctionType = Ret(Args...);
+            constexpr auto ArgCount = sizeof...(Args);
+        };
+
+        template<typename Ret, typename... Args>
+        struct FunctionTraitsHelper<Ret(Args...)> {
+            using Pointer = Ret(*)(Args...);
+            using ReturnType = Ret;
+            using FunctionType = Ret(Args...);
+            constexpr auto ArgCount = sizeof...(Args);
         };
 
         template<typename T>
@@ -48,6 +60,7 @@ namespace llhttp {
             using Pointer = typename FunctionTraitsHelper<decltype(&T::operator())>::Pointer;
             using ReturnType = typename FunctionTraitsHelper<Pointer>::ReturnType;
             using FunctionType = typename FunctionTraitsHelper<Pointer>::FunctionType;
+            constexpr auto ArgCount = FunctionTraitsHelper<Pointer>::ArgCount;
         };
     }
 
@@ -69,6 +82,52 @@ namespace llhttp {
     template<typename T>
         requires Callable<T>
     static constexpr auto ConvertibleToFunctionPointer = std::is_convertible_v<T, FunctionPointer<T> >;
+
+    namespace detail {
+        template<typename T>
+        struct ArgTypeTupleHelper;
+
+        template<typename Ret, typename... Args>
+        struct ArgTypeTupleHelper<Ret(Args...)> {
+            using type = std::tuple<Args...>;
+        };
+
+        template<typename T, typename Func>
+        struct PrependArgTypeHelper;
+
+        template<typename T, typename Ret>
+        struct PrependArgTypeHelper<T, Ret(void)> {
+            using type = Ret(T);
+        };
+
+        template<typename T, typename Ret, typename... Args>
+        struct PrependArgTypeHelper<T, Ret(Args...)> {
+            using type = Ret(T, Args...);
+        };
+    }
+
+    template<size_t N, typename F>
+        requires Callable<F>
+    using NthArgType = typename std::tuple_element_t<N,
+        typename detail::ArgTypeTupleHelper<typename FunctionTraits<F>::FunctionType>::type>;
+
+    template<Callable F>
+    concept Callback = std::is_convertible_v<FunctionPointer<F>, llhttp_cb>;
+
+    template<Callable F>
+    concept DataCallback = std::is_convertible_v<FunctionPointer<F>, llhttp_data_cb>;
+
+    template<Callable F>
+    concept CallbackWithoutParser = std::is_convertible_v<
+        FunctionPointer<
+            typename detail::PrependArgTypeHelper<llhttp_t *,
+                typename FunctionTraits<F>::FunctionType>::type>, llhttp_cb>;
+
+    template<Callable F>
+    concept DataCallbackWithoutParser = std::is_convertible_v<
+        FunctionPointer<
+            typename detail::PrependArgTypeHelper<llhttp_t *,
+                typename FunctionTraits<F>::FunctionType>::type>, llhttp_data_cb>;
 }
 
 #endif //LLHTTP_CPP_INCLUDE_LLHTTP_CPP_CONCEPTS_H

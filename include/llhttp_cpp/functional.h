@@ -5,7 +5,6 @@
 #ifndef LLHTTP_CPP_INCLUDE_LLHTTP_CPP_FUNCTIONAL_H
 #define LLHTTP_CPP_INCLUDE_LLHTTP_CPP_FUNCTIONAL_H
 
-#include "functional.h"
 #include "llhttp_cpp/concepts.h"
 
 namespace llhttp {

@@ -44,10 +44,20 @@ namespace llhttp {
         ~Settings() { free(settings_); }
 
     private:
-        // TODO: Implement convertCallback
-        // TODO: Add std::string_view support and bind llhttp_parser to the callback if llhttp_t * is not a paramenter
-        // TODO: Try to support auto conversion between int_types
+        // TODO: Implement this
         template<Callable F>
+        [[maybe_unused]] static auto llhttpParserWrapper(F &&f) noexcept {
+            return [&f]<typename... Args>(llhttp_t *, Args args...) {
+                return f(args...);
+            };
+        }
+
+        // TODO: Implement convertCallback
+        // TODO: Add std::string_view support and bind llhttp_parser to the callback if llhttp_t * is not a parameter
+        // TODO: Try to support auto conversion between int_types
+        // TODO: Check if it is necessary to support multiple callbacks for http parser
+        template<Callable F, typename type>
+            requires std::is_convertible_v<FunctionPointer<F>, type>
         [[maybe_unused]] static auto convertCallback(F &&f) noexcept {
             return toFunctionPointer(f);
         }
@@ -55,9 +65,8 @@ namespace llhttp {
     public:
 #define LLHTTP_CPP_SETTINGS_SETTER(func, name, type) \
         template<Callable F> \
-        requires std::is_convertible_v<FunctionPointer<F>, type> \
         Settings &func(F &&f) noexcept { \
-            this->settings_->name = toFunctionPointer(f); \
+            this->settings_->name = Settings::convertCallback<F, type>(std::forward<F &&>(f)); \
             return *this; \
         }
 
