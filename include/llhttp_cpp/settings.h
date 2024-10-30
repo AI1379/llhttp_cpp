@@ -41,12 +41,21 @@ namespace llhttp {
             return *this;
         }
 
-        ~Settings() { delete settings_; }
+        ~Settings() { free(settings_); }
 
-        // TODO: Add std::string_view support
+    private:
+        // TODO: Implement convertCallback
+        // TODO: Add std::string_view support and bind llhttp_parser to the callback if llhttp_t * is not a paramenter
+        // TODO: Try to support auto conversion between int_types
+        template<Callable F>
+        [[maybe_unused]] static auto convertCallback(F &&f) noexcept {
+            return toFunctionPointer(f);
+        }
+
+    public:
 #define LLHTTP_CPP_SETTINGS_SETTER(func, name, type) \
         template<Callable F> \
-        requires std::is_same_v<FunctionPointer<F>, type> \
+        requires std::is_convertible_v<FunctionPointer<F>, type> \
         Settings &func(F &&f) noexcept { \
             this->settings_->name = toFunctionPointer(f); \
             return *this; \
@@ -84,6 +93,7 @@ namespace llhttp {
 #undef LLHTTP_CPP_SETTINGS_SETTER
 
     private:
+        // TODO: check if it is safe to add test proxy
 #ifdef LLHTTP_CPP_TEST_ENABLED
         friend struct SettingsTestProxy;
 #endif

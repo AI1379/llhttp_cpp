@@ -3,8 +3,6 @@ enable_testing()
 include(GoogleTest)
 find_package(GTest REQUIRED)
 
-add_definitions(-DLLHTTP_CPP_TEST_ENABLED)
-
 set(TEST_SOURCES ${LLHTTP_CPP_TEST_DIR}/FunctionalTest.cpp
         ${LLHTTP_CPP_TEST_DIR}/SettingsTest.cpp)
 

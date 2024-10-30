@@ -6,6 +6,7 @@
 #define LLHTTP_CPP_INCLUDE_LLHTTP_CPP_CONCEPTS_H
 
 #include <functional>
+#include <type_traits>
 
 #include "concepts.h"
 

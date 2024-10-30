@@ -64,6 +64,10 @@ set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
 set(BUILD_STATIC_LIBS ON CACHE INTERNAL "")
 FetchContent_MakeAvailable(llhttp)
 
+if (LLHTTP_CPP_TEST_ENABLED)
+    add_compile_definitions(LLHTTP_CPP_TEST_ENABLED)
+endif ()
+
 add_subdirectory(src)
 
 if (LLHTTP_CPP_TEST_ENABLED)

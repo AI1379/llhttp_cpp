@@ -10,4 +10,4 @@ message(STATUS "CMakeLists.txt: LLHTTP_CPP_SOURCES: ${LLHTTP_CPP_SOURCES}")
 
 add_library(llhttp_cpp ${LLHTTP_CPP_SOURCES})
 target_include_directories(llhttp_cpp PUBLIC ${LLHTTP_CPP_INCLUDE_DIR})
-target_link_libraries(llhttp_cpp PRIVATE llhttp_static)
+target_link_libraries(llhttp_cpp PUBLIC llhttp_static)
