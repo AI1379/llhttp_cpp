@@ -3,3 +3,4 @@
 //
 
 #include "llhttp_cpp/settings.h"
+#include "llhttp_cpp/parser.h"
