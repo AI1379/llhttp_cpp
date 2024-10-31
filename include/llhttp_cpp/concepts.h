@@ -8,7 +8,6 @@
 #include <functional>
 #include <type_traits>
 
-#include "concepts.h"
 #include "llhttp.h"
 
 namespace llhttp {
@@ -27,7 +26,7 @@ namespace llhttp {
             using Pointer = Ret(*)(Args...);
             using ReturnType = Ret;
             using FunctionType = Ret(Args...);
-            constexpr auto ArgCount = sizeof...(Args);
+            static constexpr auto ArgCount = sizeof...(Args);
         };
 
         template<typename F, typename Ret, typename... Args>
@@ -35,7 +34,7 @@ namespace llhttp {
             using Pointer = Ret(*)(Args...);
             using ReturnType = Ret;
             using FunctionType = Ret(Args...);
-            constexpr auto ArgCount = sizeof...(Args);
+            static constexpr auto ArgCount = sizeof...(Args);
         };
 
         template<typename F, typename Ret, typename... Args>
@@ -43,7 +42,7 @@ namespace llhttp {
             using Pointer = Ret(*)(Args...);
             using ReturnType = Ret;
             using FunctionType = Ret(Args...);
-            constexpr auto ArgCount = sizeof...(Args);
+            static constexpr auto ArgCount = sizeof...(Args);
         };
 
         template<typename Ret, typename... Args>
@@ -51,7 +50,7 @@ namespace llhttp {
             using Pointer = Ret(*)(Args...);
             using ReturnType = Ret;
             using FunctionType = Ret(Args...);
-            constexpr auto ArgCount = sizeof...(Args);
+            static constexpr auto ArgCount = sizeof...(Args);
         };
 
         template<typename T>
@@ -60,7 +59,7 @@ namespace llhttp {
             using Pointer = typename FunctionTraitsHelper<decltype(&T::operator())>::Pointer;
             using ReturnType = typename FunctionTraitsHelper<Pointer>::ReturnType;
             using FunctionType = typename FunctionTraitsHelper<Pointer>::FunctionType;
-            constexpr auto ArgCount = FunctionTraitsHelper<Pointer>::ArgCount;
+            static constexpr auto ArgCount = FunctionTraitsHelper<Pointer>::ArgCount;
         };
     }
 
@@ -111,20 +110,20 @@ namespace llhttp {
     using NthArgType = typename std::tuple_element_t<N,
         typename detail::ArgTypeTupleHelper<typename FunctionTraits<F>::FunctionType>::type>;
 
-    template<Callable F>
-    concept Callback = std::is_convertible_v<FunctionPointer<F>, llhttp_cb>;
+    template<typename F>
+    concept Callback = Callable<F> && std::is_convertible_v<FunctionPointer<F>, llhttp_cb>;
 
-    template<Callable F>
-    concept DataCallback = std::is_convertible_v<FunctionPointer<F>, llhttp_data_cb>;
+    template<typename F>
+    concept DataCallback = Callable<F> && std::is_convertible_v<FunctionPointer<F>, llhttp_data_cb>;
 
-    template<Callable F>
-    concept CallbackWithoutParser = std::is_convertible_v<
+    template<typename F>
+    concept CallbackWithoutParser = Callable<F> && std::is_convertible_v<
         FunctionPointer<
             typename detail::PrependArgTypeHelper<llhttp_t *,
                 typename FunctionTraits<F>::FunctionType>::type>, llhttp_cb>;
 
-    template<Callable F>
-    concept DataCallbackWithoutParser = std::is_convertible_v<
+    template<typename F>
+    concept DataCallbackWithoutParser = Callable<F> && std::is_convertible_v<
         FunctionPointer<
             typename detail::PrependArgTypeHelper<llhttp_t *,
                 typename FunctionTraits<F>::FunctionType>::type>, llhttp_data_cb>;

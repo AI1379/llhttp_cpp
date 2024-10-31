@@ -45,12 +45,12 @@ namespace llhttp {
 
     private:
         // TODO: Implement this
-        template<Callable F>
-        [[maybe_unused]] static auto llhttpParserWrapper(F &&f) noexcept {
-            return [&f]<typename... Args>(llhttp_t *, Args args...) {
-                return f(args...);
-            };
-        }
+        // template<Callable F>
+        // [[maybe_unused]] static auto llhttpParserWrapper(F &&f) noexcept {
+        //     return [&f]<typename... Args>(llhttp_t *, Args args...) {
+        //         return f(args...);
+        //     };
+        // }
 
         // TODO: Implement convertCallback
         // TODO: Add std::string_view support and bind llhttp_parser to the callback if llhttp_t * is not a parameter
