@@ -17,7 +17,7 @@ namespace llhttp {
             if (used) {
                 using type = decltype(storage);
                 storage.~type();
-                new(&storage) type(std::forward<Func>(func));
+                new (&storage) type(std::forward<Func>(func));
             }
             used = true;
 
@@ -26,7 +26,7 @@ namespace llhttp {
                 return Ret(c(std::forward<Args>(args)...));
             };
         }
-    }
+    } // namespace detail
 
     template<typename Func, int UniqueId = 0>
         requires Callable<Func>
@@ -38,6 +38,6 @@ namespace llhttp {
             return detail::functionPointerImpl<UniqueId>(std::forward<Func>(func), FunctionPointer<Func>(nullptr));
         }
     }
-}
+} // namespace llhttp
 
-#endif //LLHTTP_CPP_INCLUDE_LLHTTP_CPP_FUNCTIONAL_H
+#endif // LLHTTP_CPP_INCLUDE_LLHTTP_CPP_FUNCTIONAL_H

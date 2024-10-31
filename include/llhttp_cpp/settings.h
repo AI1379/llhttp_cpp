@@ -5,10 +5,10 @@
 #ifndef LLHTTP_CPP_INCLUDE_LLHTTP_CPP_SETTINGS_H
 #define LLHTTP_CPP_INCLUDE_LLHTTP_CPP_SETTINGS_H
 
-#include "functional.h"
-#include "concepts.h"
-#include "llhttp.h"
 #include <cstdlib>
+#include "concepts.h"
+#include "functional.h"
+#include "llhttp.h"
 
 namespace llhttp {
     class Settings {
@@ -63,12 +63,12 @@ namespace llhttp {
         }
 
     public:
-#define LLHTTP_CPP_SETTINGS_SETTER(func, name, type) \
-        template<Callable F> \
-        Settings &func(F &&f) noexcept { \
-            this->settings_->name = Settings::convertCallback<F, type>(std::forward<F &&>(f)); \
-            return *this; \
-        }
+#define LLHTTP_CPP_SETTINGS_SETTER(func, name, type)                                                                   \
+    template<Callable F>                                                                                               \
+    Settings &func(F &&f) noexcept {                                                                                   \
+        this->settings_->name = Settings::convertCallback<F, type>(std::forward<F &&>(f));                             \
+        return *this;                                                                                                  \
+    }
 
         LLHTTP_CPP_SETTINGS_SETTER(OnMessageBegin, on_message_begin, llhttp_cb)
 
@@ -109,6 +109,6 @@ namespace llhttp {
         using SettingsPtr = llhttp_settings_t *;
         SettingsPtr settings_;
     };
-} // llhttp
+} // namespace llhttp
 
-#endif //LLHTTP_CPP_INCLUDE_LLHTTP_CPP_SETTINGS_H
+#endif // LLHTTP_CPP_INCLUDE_LLHTTP_CPP_SETTINGS_H

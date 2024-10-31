@@ -5,8 +5,8 @@
 #ifndef LLHTTP_CPP_INCLUDE_LLHTTP_CPP_PARSER_H
 #define LLHTTP_CPP_INCLUDE_LLHTTP_CPP_PARSER_H
 
-#include "llhttp.h"
 #include <cstdlib>
+#include "llhttp.h"
 
 namespace llhttp {
     class Parser {
@@ -50,6 +50,6 @@ namespace llhttp {
     private:
         llhttp_t *parser_;
     };
-} // llhttp
+} // namespace llhttp
 
-#endif //LLHTTP_CPP_INCLUDE_LLHTTP_CPP_PARSER_H
+#endif // LLHTTP_CPP_INCLUDE_LLHTTP_CPP_PARSER_H
