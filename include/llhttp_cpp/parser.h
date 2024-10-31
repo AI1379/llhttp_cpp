@@ -5,7 +5,8 @@
 #ifndef LLHTTP_CPP_INCLUDE_LLHTTP_CPP_PARSER_H
 #define LLHTTP_CPP_INCLUDE_LLHTTP_CPP_PARSER_H
 
-#include "llhttp_cpp/parser.h"
+#include "llhttp.h"
+#include <cstdlib>
 
 namespace llhttp {
     class Parser {
