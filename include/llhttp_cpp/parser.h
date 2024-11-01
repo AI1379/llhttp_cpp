@@ -7,6 +7,7 @@
 
 #include <cstdlib>
 #include "llhttp.h"
+#include "llhttp_cpp/common.h"
 
 namespace llhttp {
     class Parser {
