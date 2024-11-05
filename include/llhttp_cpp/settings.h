@@ -29,6 +29,14 @@ namespace llhttp {
             other.settings_ = nullptr;
         }
 
+        // TODO: Find a way to Implement this better
+        // This cannot be explicit to allow for the following syntax:
+        // Settings settings = { .on_message_begin = []() { return 0; } };
+        explicit Settings(const llhttp_settings_t &settings) noexcept {
+            settings_ = static_cast<SettingsPtr>(malloc(sizeof(llhttp_settings_t)));
+            *(this->settings_) = settings;
+        }
+
         Settings &operator=(const Settings &other) noexcept {
             if (!settings_)
                 settings_ = static_cast<SettingsPtr>(malloc(sizeof(llhttp_settings_t)));

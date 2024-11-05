@@ -10,6 +10,21 @@
 #include "llhttp.h"
 
 namespace llhttp {
+
+    using Error = llhttp_errno_t;
+    using Flags = llhttp_flags_t;
+    using LenientFlags = llhttp_lenient_flags_t;
+    using ParserType = llhttp_type_t;
+    using FinishStatus = llhttp_finish_t;
+    using Method = llhttp_method_t;
+    using Status = llhttp_status_t;
+
+    template<typename Enum>
+        requires std::is_enum_v<Enum>
+    constexpr Enum toEnum(uint8_t value) {
+        return static_cast<Enum>(value);
+    }
+
 #define LLHTTP_CPP_REGISTER_ENUM(enum)                                                                                 \
     case enum:                                                                                                         \
         return #enum
@@ -126,6 +141,7 @@ namespace llhttp {
             return "Unknown enum";
         }
     }
+#undef LLHTTP_CPP_REGISTER_ENUM
 
 } // namespace llhttp
 
