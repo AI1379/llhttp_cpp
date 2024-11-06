@@ -11,6 +11,7 @@
 
 namespace llhttp {
 
+    using Type = llhttp_type_t;
     using Error = llhttp_errno_t;
     using Flags = llhttp_flags_t;
     using LenientFlags = llhttp_lenient_flags_t;
