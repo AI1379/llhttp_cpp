@@ -109,6 +109,8 @@ namespace llhttp {
 
 #undef LLHTTP_CPP_SETTINGS_SETTER
 
+        [[nodiscard]] llhttp_settings_t *get() const noexcept { return settings_; }
+
     private:
         // TODO: check if it is safe to add test proxy
 #ifdef LLHTTP_CPP_TEST_ENABLED
