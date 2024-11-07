@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include "llhttp.h"
 #include "llhttp_cpp/common.h"
+#include "llhttp_cpp/concepts.h"
 #include "llhttp_cpp/settings.h"
 
 namespace llhttp {
@@ -32,6 +33,13 @@ namespace llhttp {
             this->parser_ = other.parser_;
             other.parser_ = nullptr;
         }
+
+        Parser(const llhttp_t &parser) noexcept {
+            parser_ = static_cast<llhttp_t *>(malloc(sizeof(llhttp_t)));
+            *(this->parser_) = parser;
+        }
+
+        Parser(const llhttp_t *parser) noexcept { this->parser_ = const_cast<llhttp_t *>(parser); }
 
         Parser &operator=(const Parser &other) noexcept {
             if (this == &other)
@@ -98,7 +106,7 @@ namespace llhttp {
 
         // llhttp_errno_name llhttp_method_name llhttp_status_name
 
-        void setLenientFlags(llhttp_lenient_flags_t flags) const noexcept {
+        Parser &setLenientFlags(llhttp_lenient_flags_t flags) noexcept {
 #define LLHTTP_CPP_REGISTER_LENIENT_CONFIG(name, name2)                                                                \
     if (flags & name) {                                                                                                \
         this->set##name2(true);                                                                                        \
@@ -115,45 +123,98 @@ namespace llhttp {
             LLHTTP_CPP_REGISTER_LENIENT_CONFIG(LENIENT_SPACES_AFTER_CHUNK_SIZE, LenientSpacesAfterChunkSize);
 
 #undef LLHTTP_CPP_REGISTER_LENIENT_CONFIG
+            return *this;
         }
 
-        void setLenientHeaders(bool enabled) const noexcept { llhttp_set_lenient_headers(this->parser_, enabled); }
+        Parser &setLenientHeaders(bool enabled) noexcept {
+            llhttp_set_lenient_headers(this->parser_, enabled);
+            return *this;
+        }
 
-        void setLenientChunkedLength(bool enabled) const noexcept {
+        Parser &setLenientChunkedLength(bool enabled) noexcept {
             llhttp_set_lenient_chunked_length(this->parser_, enabled);
+            return *this;
         }
 
-        void setLenientKeepAlive(bool enabled) const noexcept { llhttp_set_lenient_keep_alive(this->parser_, enabled); }
+        Parser &setLenientKeepAlive(bool enabled) noexcept {
+            llhttp_set_lenient_keep_alive(this->parser_, enabled);
+            return *this;
+        }
 
-        void setLenientTransferEncoding(bool enabled) const noexcept {
+        Parser &setLenientTransferEncoding(bool enabled) noexcept {
             llhttp_set_lenient_transfer_encoding(this->parser_, enabled);
+            return *this;
         }
 
-        void setLenientVersion(bool enabled) const noexcept { llhttp_set_lenient_version(this->parser_, enabled); }
+        Parser &setLenientVersion(bool enabled) noexcept {
+            llhttp_set_lenient_version(this->parser_, enabled);
+            return *this;
+        }
 
-        void setLenientDataAfterClose(bool enabled) const noexcept {
+        Parser &setLenientDataAfterClose(bool enabled) noexcept {
             llhttp_set_lenient_data_after_close(this->parser_, enabled);
+            return *this;
         }
 
-        void setLenientOptionalLfAfterCr(bool enabled) const noexcept {
+        Parser &setLenientOptionalLfAfterCr(bool enabled) noexcept {
             llhttp_set_lenient_optional_lf_after_cr(this->parser_, enabled);
+            return *this;
         }
 
-        void setLenientOptionalCrBeforeLf(bool enabled) const noexcept {
+        Parser &setLenientOptionalCrBeforeLf(bool enabled) noexcept {
             llhttp_set_lenient_optional_cr_before_lf(this->parser_, enabled);
+            return *this;
         }
 
-        void setLenientOptionalCrlfAfterChunk(bool enabled) const noexcept {
+        Parser &setLenientOptionalCrlfAfterChunk(bool enabled) noexcept {
             llhttp_set_lenient_optional_crlf_after_chunk(this->parser_, enabled);
+            return *this;
         }
 
-        void setLenientSpacesAfterChunkSize(bool enabled) const noexcept {
+        Parser &setLenientSpacesAfterChunkSize(bool enabled) noexcept {
             llhttp_set_lenient_spaces_after_chunk_size(this->parser_, enabled);
+            return *this;
         }
 
     private:
         llhttp_t *parser_;
     };
+
+    template<Callable F>
+        requires std::is_convertible_v<typename FunctionTraits<F>::FunctionType, int(Parser &)>
+    static auto llhttpCallbackWrapper(F &&f) noexcept {
+        return [f = std::forward<F>(f)](llhttp_t *parser) -> int { return f(Parser(parser)); };
+    }
+
+    template<Callable F>
+        requires std::is_convertible_v<typename FunctionTraits<F>::FunctionType, int(Parser &, const char *, size_t)>
+    static auto llhttpDataCallbackWrapper(F &&f) noexcept {
+        return [f = std::forward<F>(f)](llhttp_t *parser, const char *at, size_t length) -> int {
+            return f(Parser(parser), at, length);
+        };
+    }
+
+    namespace detail {
+        template<typename T, typename F>
+        struct ReplaceFirstArgTypeHelper;
+
+        template<typename T, typename R, typename Ret, typename... Args>
+        struct ReplaceFirstArgTypeHelper<T, Ret(R, Args...)> {
+            using type = Ret(T, Args...);
+        };
+    } // namespace detail
+
+    template<Callable F, typename type>
+        requires std::is_convertible_v<FunctionPointer<typename detail::ReplaceFirstArgTypeHelper<llhttp_t *, F>::type>, type>
+    static auto convertCallback(F &&f) noexcept {
+        if constexpr (std::is_same_v<type, llhttp_cb>) {
+            return llhttpCallbackWrapper(std::forward<F>(f));
+        } else if constexpr (std::is_same_v<type, llhttp_data_cb>) {
+            return llhttpDataCallbackWrapper(std::forward<F>(f));
+        }
+        return toFunctionPointer(f);
+    }
+
 } // namespace llhttp
 
 #endif // LLHTTP_CPP_INCLUDE_LLHTTP_CPP_PARSER_H
